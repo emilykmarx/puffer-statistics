@@ -1,0 +1,10 @@
+#linear_bba/bbr considered 86379 sessions, stall/watch hours: 26.992/14617.756
+#mpc/bbr considered 90357 sessions, stall/watch hours: 32.902/14177.159
+#pensieve/bbr considered 87862 sessions, stall/watch hours: 22.519/13857.023
+#puffer_ttp_cl/bbr considered 93227 sessions, stall/watch hours: 18.971/16656.458
+#robust_mpc/bbr considered 88387 sessions, stall/watch hours: 13.985/13605.065
+linear_bba/bbr stall ratio (95% CI): 0.16746569% .. 0.20258898%, mean= 0.18461021; SSIM (95% CI): 16.69501695 .. 16.81619646, mean= 16.75518407; SSIMvar (95% CI): 1.02515088 .. 1.03284505, mean= 1.02899796
+mpc/bbr stall ratio (95% CI): 0.20768271% .. 0.24780017%, mean= 0.22720269; SSIM (95% CI): 16.74230145 .. 16.86116518, mean= 16.80132667; SSIMvar (95% CI): 0.72052994 .. 0.72652351, mean= 0.72352672
+pensieve/bbr stall ratio (95% CI): 0.14474852% .. 0.17639431%, mean= 0.15993968; SSIM (95% CI): 16.38828348 .. 16.53129033, mean= 16.45919831; SSIMvar (95% CI): 0.96587882 .. 0.97545759, mean= 0.97066820
+puffer_ttp_cl/bbr stall ratio (95% CI): 0.11067371% .. 0.13479802%, mean= 0.12243478; SSIM (95% CI): 16.81663531 .. 16.92721789, mean= 16.87157464; SSIMvar (95% CI): 0.67692811 .. 0.68305127, mean= 0.67998969
+robust_mpc/bbr stall ratio (95% CI): 0.08645797% .. 0.11066191%, mean= 0.09815591; SSIM (95% CI): 16.16855088 .. 16.30126190, mean= 16.23439949; SSIMvar (95% CI): 0.89374899 .. 0.90126450, mean= 0.89750674
