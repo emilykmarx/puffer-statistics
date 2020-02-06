@@ -314,7 +314,7 @@ int main(int argc, char *argv[]) {
             {nullptr, 0, nullptr, 0}
         };
         Action action = NONE;
-        string desired_schemes; // TODO: primary or vintage for now; allow comma-sep list
+        string desired_schemes; 
         string intersection_filename;
 
         while (true) {

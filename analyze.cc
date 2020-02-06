@@ -489,8 +489,8 @@ using video_sent_table = map<uint64_t, VideoSent>;
 
 #define MAX_SSIM 0.99999    // max acceptable raw SSIM (exclusive) 
 // ignore SSIM ~ 1
-optional<double> raw_ssim_to_db(const double raw_ssim) {
-    if (raw_ssim > MAX_SSIM) return nullopt; 
+/* optional<*/ double /*>*/ raw_ssim_to_db(const double raw_ssim) {
+    // if (raw_ssim > MAX_SSIM) return nullopt; 
     return -10.0 * log10( 1 - raw_ssim );
 }
 
@@ -639,7 +639,7 @@ class Parser {
                 const uint64_t timestamp{to_uint64(timestamp_str)};
                 if (timestamp < dates.first or timestamp > dates.second) {
                     n_bad_ts++;
-                    continue;
+                    // continue;
                 }
 
                 split_on_char(measurement_tag_set, ',', measurement_tag_set_fields);
@@ -796,7 +796,7 @@ class Parser {
         // print a tuple of any size, promoting uint8_t
         template<class Tuple, std::size_t N>
         struct TuplePrinter {
-            static void print(const Tuple& t)
+            static void print(const Tuple& t) 
             {
                 TuplePrinter<Tuple, N-1>::print(t);
                 std::cout << ", " << +std::get<N-1>(t);
@@ -805,21 +805,21 @@ class Parser {
 
         template<class Tuple>
         struct TuplePrinter<Tuple, 1> {
-            static void print(const Tuple& t)
+            static void print(const Tuple& t) 
             {
                 std::cout << +std::get<0>(t);
             }
         };
 
         template<class... Args>
-        void print(const std::tuple<Args...>& t)
+        void print(const std::tuple<Args...>& t) const
         {
             std::cout << "(";
             TuplePrinter<decltype(t), sizeof...(Args)>::print(t);
             std::cout << ")\n";
         }
 
-        void debug_print_grouped_data() {
+        void debug_print_grouped_data() const {
             cerr << "sessions:" << endl;
             for ( const auto & [key, events] : sessions ) {
                 cerr << "session key: "; 
@@ -923,16 +923,17 @@ class Parser {
                 const EventSummary summary = summarize(key, events);
 
                 /* find matching videosent stream */
-                const auto [normal_ssim_chunks, ssim_1_chunks, total_chunks, ssim_sum, mean_delivery_rate, average_bitrate, ssim_variation] = video_summarize(key);
+                const auto [mean_ssim, mean_delivery_rate, average_bitrate, ssim_variation] = video_summarize(key);
+                /* const auto [normal_ssim_chunks, ssim_1_chunks, total_chunks, ssim_sum, mean_delivery_rate, average_bitrate, ssim_variation] = video_summarize(key);
                 const double mean_ssim = ssim_sum == -1 ? -1 : ssim_sum / normal_ssim_chunks;
-                const size_t high_ssim_chunks = total_chunks - normal_ssim_chunks;
+                const size_t high_ssim_chunks = total_chunks - normal_ssim_chunks; */
 
                 if (mean_delivery_rate < 0 ) {
                     missing_video_stats++;
                 } else {
-                    overall_chunks += total_chunks;
+                    /* overall_chunks += total_chunks;
                     overall_high_ssim_chunks += high_ssim_chunks;
-                    overall_ssim_1_chunks += ssim_1_chunks;
+                    overall_ssim_1_chunks += ssim_1_chunks; */
                 }
 
                 cout << fixed;
@@ -976,10 +977,10 @@ class Parser {
 
         /* Summarize a list of Videosents, ignoring SSIM ~ 1 */
         // normal_ssim_chunks, ssim_1_chunks, total_chunks, ssim_sum, mean_delivery_rate, average_bitrate, ssim_variation]
-        tuple<size_t, size_t, size_t, double, double, double, double> video_summarize(const session_key & key) const {
+        tuple</*size_t, size_t, size_t, */double, double, double, double> video_summarize(const session_key & key) const {
             const auto videosent_it = chunks.find(key);
             if (videosent_it == chunks.end()) {
-                return { -1, -1, -1, -1, -1, -1, -1 };
+                return { /*-1, -1, -1, */-1, -1, -1, -1 };
             }
 
             const vector<pair<uint64_t, const VideoSent *>> & chunk_stream = videosent_it->second;
@@ -987,16 +988,18 @@ class Parser {
             double ssim_sum = 0;    // raw index
             double delivery_rate_sum = 0;
             double bytes_sent_sum = 0;
+            optional<double> ssim_last{};
             optional<double> ssim_cur_db{};     // empty if index == 1
             optional<double> ssim_last_db{};    // empty if no previous, or previous had index == 1
             double ssim_absolute_variation_sum = 0;
-            size_t num_ssim_samples = chunk_stream.size();
+            // size_t num_ssim_samples = chunk_stream.size();
             /* variation is calculated between each consecutive pair of chunks */
-            size_t num_ssim_var_samples = chunk_stream.size() - 1;  
-            size_t num_ssim_1_chunks = 0;
+            /* size_t num_ssim_var_samples = chunk_stream.size() - 1;  
+            size_t num_ssim_1_chunks = 0; */
 
             for ( const auto [ts, videosent] : chunk_stream ) {
-                float raw_ssim = videosent->ssim_index.value(); // would've thrown by this point if not set
+                ssim_sum += videosent->ssim_index.value();
+                /* float raw_ssim = videosent->ssim_index.value(); // would've thrown by this point if not set
                 if (raw_ssim == 1.0) {
                     num_ssim_1_chunks++; 
                 }
@@ -1005,14 +1008,17 @@ class Parser {
                     ssim_sum += raw_ssim;
                 } else {
                     num_ssim_samples--; // for ssim_mean, ignore chunk with SSIM == 1
-                }
+                } */
 
-                if (ssim_cur_db.has_value() && ssim_last_db.has_value()) {  
+                if (ssim_last.has_value()) {
+                    ssim_absolute_variation_sum += abs(raw_ssim_to_db(videosent->ssim_index.value()) - raw_ssim_to_db(ssim_last.value()));
+                /* if (ssim_cur_db.has_value() && ssim_last_db.has_value()) {  
                     ssim_absolute_variation_sum += abs(ssim_cur_db.value() - ssim_last_db.value());
                 } else {
-                    num_ssim_var_samples--; // for ssim_var, ignore pair containing chunk with SSIM == 1
+                    num_ssim_var_samples--; // for ssim_var, ignore pair containing chunk with SSIM == 1 */
                 }
 
+                ssim_last.emplace(videosent->ssim_index.value());
                 ssim_last_db = ssim_cur_db;
 
                 delivery_rate_sum += videosent->delivery_rate.value();
@@ -1022,11 +1028,14 @@ class Parser {
             const double average_bitrate = 8 * bytes_sent_sum / (2.002 * chunk_stream.size());
 
             double average_absolute_ssim_variation = -1;
-            if (num_ssim_var_samples > 0) {
-                average_absolute_ssim_variation = ssim_absolute_variation_sum / num_ssim_var_samples;
+            if (chunk_stream.size() > 1) {
+                average_absolute_ssim_variation = ssim_absolute_variation_sum / (chunk_stream.size() - 1);
+            /* if (num_ssim_var_samples > 0) {
+                average_absolute_ssim_variation = ssim_absolute_variation_sum / num_ssim_var_samples; */
             }
 
-            return { num_ssim_samples, num_ssim_1_chunks, chunk_stream.size(), ssim_sum, delivery_rate_sum / chunk_stream.size(), average_bitrate, average_absolute_ssim_variation };
+            // return { num_ssim_samples, num_ssim_1_chunks, chunk_stream.size(), ssim_sum, delivery_rate_sum / chunk_stream.size(), average_bitrate, average_absolute_ssim_variation };
+            return { ssim_sum / chunk_stream.size(), delivery_rate_sum / chunk_stream.size(), average_bitrate, average_absolute_ssim_variation };
         }
 
         /* Summarize a list of events corresponding to a stream. */
@@ -1187,7 +1196,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (argc != 3) {
-            cerr << "Usage: " << argv[0] << " expt_dump [from postgres] date [e.g. 2019-07-01T11_2019-07-02T11]\n";
+            cerr << "Usage: " << argv[0] << " expt_dump[from postgres] date[e.g. 2019-07-01T11_2019-07-02T11]\n";
             return EXIT_FAILURE;
         }
 
