@@ -5,15 +5,15 @@ use strict;
 print <<'END';
 set xlabel "Startup delay (s)" 
 set xlabel  offset character 0, 0.75, 0 font "" textcolor lt -1 norotate
-set xrange [ .4442:.414 ] reverse writeback
+set xrange [ .446:.413 ] reverse writeback
 set ylabel "Average first-chunk SSIM (dB)" 
 set ylabel  offset character 3, 0, 0 font "" textcolor lt -1 rotate
-set yrange [ 10.55:11.2 ] noreverse writeback
+set yrange [ 10.51:11.2 ] noreverse writeback
 set border 3 front lt black linewidth 1.000 dashtype solid
 set xtics border out scale 0.5,0.5 offset 0,0.5 nomirror norotate  autojustify
 set ytics border out scale 0.5,0.5 offset 0.25,0 nomirror norotate  autojustify
 set xtics 0.01
-set ytics 0.1
+set ytics 0.2
 set font "Times,10"
 unset key
 set noclip
